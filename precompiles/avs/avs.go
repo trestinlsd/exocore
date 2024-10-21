@@ -133,12 +133,28 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 		}
 	case MethodGetOptinOperators:
 		bz, err = p.GetOptedInOperatorAccAddrs(ctx, contract, method, args)
+		if err != nil {
+			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
+			bz, err = method.Outputs.Pack(false)
+		}
 	case MethodGetAVSInfo:
 		bz, err = p.GetAVSInfo(ctx, contract, method, args)
+		if err != nil {
+			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
+			bz, err = method.Outputs.Pack(false)
+		}
 	case MethodGetTaskInfo:
 		bz, err = p.GetTaskInfo(ctx, contract, method, args)
+		if err != nil {
+			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
+			bz, err = method.Outputs.Pack(false)
+		}
 	case MethodIsOperator:
 		bz, err = p.IsOperator(ctx, contract, method, args)
+		if err != nil {
+			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
+			bz, err = method.Outputs.Pack(false)
+		}
 
 	case MethodGetAVSUSDValue:
 		bz, err = p.GetAVSUSDValue(ctx, contract, method, args)
@@ -151,6 +167,12 @@ func (p Precompile) Run(evm *vm.EVM, contract *vm.Contract, readOnly bool) (bz [
 		if err != nil {
 			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
 			bz, err = method.Outputs.Pack(common.Big0)
+		}
+	case MethodGetCurrentEpoch:
+		bz, err = p.GetCurrentEpoch(ctx, contract, method, args)
+		if err != nil {
+			ctx.Logger().Error("internal error when calling avs precompile", "module", "avs precompile", "method", method.Name, "err", err)
+			bz, err = method.Outputs.Pack(false)
 		}
 	case MethodChallenge:
 		bz, err = p.Challenge(ctx, evm.Origin, contract, stateDB, method, args)
@@ -197,7 +219,8 @@ func (Precompile) IsTransaction(methodID string) bool {
 		MethodDeregisterOperatorFromAVS, MethodCreateAVSTask, MethodRegisterBLSPublicKey, MethodChallenge,
 		MethodRegisterOperatorToExocore, MethodOperatorSubmitTask:
 		return true
-	case MethodGetRegisteredPubkey, MethodGetOptinOperators, MethodGetAVSUSDValue, MethodGetOperatorOptedUSDValue:
+	case MethodGetRegisteredPubkey, MethodGetOptinOperators, MethodGetAVSUSDValue, MethodGetOperatorOptedUSDValue,
+		MethodGetAVSInfo, MethodGetTaskInfo, MethodIsOperator, MethodGetCurrentEpoch:
 		return false
 	default:
 		return false

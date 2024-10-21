@@ -62,6 +62,11 @@ func (k Keeper) GetOperatorKeeper() types.OperatorKeeper {
 	return k.operatorKeeper
 }
 
+// GetEpochKeeper returns the operatorKeeper from the Keeper struct.
+func (k Keeper) GetEpochKeeper() types.EpochsKeeper {
+	return k.epochsKeeper
+}
+
 func (k Keeper) ValidateAssetIDs(ctx sdk.Context, assetIDs []string) error {
 	for _, assetID := range assetIDs {
 		if !k.assetsKeeper.IsStakingAsset(ctx, assetID) {

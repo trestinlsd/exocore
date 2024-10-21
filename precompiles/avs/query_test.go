@@ -548,3 +548,44 @@ func (suite *AVSManagerPrecompileSuite) TestGetTaskInfo() {
 		})
 	}
 }
+func (suite *AVSManagerPrecompileSuite) TestGetCurrentEpoch() {
+	method := suite.precompile.Methods[avsManagerPrecompile.MethodGetCurrentEpoch]
+	testCases := []avsTestCases{
+		{
+			"success - existent avs",
+			func() []interface{} {
+				return []interface{}{
+					epochstypes.DayEpochID,
+				}
+			},
+			func(bz []byte) {
+				var out int64
+
+				err := suite.precompile.UnpackIntoInterface(&out, avsManagerPrecompile.MethodGetCurrentEpoch, bz)
+				suite.Require().NoError(err, "failed to unpack output", err)
+				suite.Require().Equal(int64(1), out)
+			},
+			100000,
+			false,
+			"",
+		},
+	}
+	testCases = append(testCases, baseTestCases[0])
+
+	for _, tc := range testCases {
+		suite.Run(tc.name, func() {
+			contract := vm.NewContract(vm.AccountRef(suite.Address), suite.precompile, big.NewInt(0), tc.gas)
+
+			bz, err := suite.precompile.GetCurrentEpoch(suite.Ctx, contract, &method, tc.malleate())
+
+			if tc.expErr {
+				suite.Require().Error(err)
+				suite.Require().Contains(err.Error(), tc.errContains)
+			} else {
+				suite.Require().NoError(err)
+				suite.Require().NotEmpty(bz)
+				tc.postCheck(bz)
+			}
+		})
+	}
+}

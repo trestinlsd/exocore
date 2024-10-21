@@ -20,9 +20,10 @@ const (
 	MethodGetAVSUSDValue           = "getAVSUSDValue"
 	MethodGetOperatorOptedUSDValue = "getOperatorOptedUSDValue"
 
-	MethodGetAVSInfo  = "getAVSInfo"
-	MethodGetTaskInfo = "getTaskInfo"
-	MethodIsOperator  = "isOperator"
+	MethodGetAVSInfo      = "getAVSInfo"
+	MethodGetTaskInfo     = "getTaskInfo"
+	MethodIsOperator      = "isOperator"
+	MethodGetCurrentEpoch = "getCurrentEpoch"
 )
 
 func (p Precompile) GetRegisteredPubkey(
@@ -76,7 +77,7 @@ func (p Precompile) GetAVSUSDValue(
 	args []interface{},
 ) ([]byte, error) {
 	if len(args) != len(p.ABI.Methods[MethodGetAVSUSDValue].Inputs) {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodRegisterAVS].Inputs), len(args))
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodGetAVSUSDValue].Inputs), len(args))
 	}
 	addr, ok := args[0].(common.Address)
 	if !ok {
@@ -97,7 +98,7 @@ func (p Precompile) GetOperatorOptedUSDValue(
 	args []interface{},
 ) ([]byte, error) {
 	if len(args) != len(p.ABI.Methods[MethodGetOperatorOptedUSDValue].Inputs) {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodRegisterAVS].Inputs), len(args))
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodGetOperatorOptedUSDValue].Inputs), len(args))
 	}
 	avsAddr, ok := args[0].(common.Address)
 	if !ok {
@@ -194,4 +195,25 @@ func (p Precompile) GetTaskInfo(
 	info := []uint64{task.StartingEpoch, task.TaskResponsePeriod, task.TaskStatisticalPeriod}
 
 	return method.Outputs.Pack(info)
+}
+
+// GetCurrentEpoch obtain the specified current epoch based on epochIdentifier.
+func (p Precompile) GetCurrentEpoch(
+	ctx sdk.Context,
+	_ *vm.Contract,
+	method *abi.Method,
+	args []interface{},
+) ([]byte, error) {
+	if len(args) != len(p.ABI.Methods[MethodGetCurrentEpoch].Inputs) {
+		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodGetCurrentEpoch].Inputs), len(args))
+	}
+	epochIdentifier, ok := args[0].(string)
+	if !ok {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "string", epochIdentifier)
+	}
+	epoch, flag := p.avsKeeper.GetEpochKeeper().GetEpochInfo(ctx, epochIdentifier)
+	if !flag {
+		return nil, nil
+	}
+	return method.Outputs.Pack(epoch.CurrentEpoch)
 }

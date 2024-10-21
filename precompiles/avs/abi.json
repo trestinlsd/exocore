@@ -492,6 +492,25 @@
 	{
 		"inputs": [
 			{
+				"internalType": "string",
+				"name": "epochIdentifier",
+				"type": "string"
+			}
+		],
+		"name": "getCurrentEpoch",
+		"outputs": [
+			{
+				"internalType": "int64",
+				"name": "currentEpoch",
+				"type": "int64"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
 				"internalType": "address",
 				"name": "avsAddr",
 				"type": "address"
