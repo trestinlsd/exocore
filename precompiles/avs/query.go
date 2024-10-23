@@ -3,6 +3,8 @@ package avs
 import (
 	"errors"
 	"fmt"
+	"strconv"
+
 	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
 	avstype "github.com/ExocoreNetwork/exocore/x/avs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -10,7 +12,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
 	cmn "github.com/evmos/evmos/v16/precompiles/common"
-	"strconv"
 )
 
 const (
