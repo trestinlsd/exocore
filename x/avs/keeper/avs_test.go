@@ -6,8 +6,8 @@ import (
 	"math/big"
 	"time"
 
-	avstypes "github.com/ExocoreNetwork/exocore/x/avs/keeper"
 	"github.com/ExocoreNetwork/exocore/x/avs/types"
+	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	delegationtypes "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 	operatorTypes "github.com/ExocoreNetwork/exocore/x/operator/types"
@@ -26,7 +26,7 @@ func (suite *AVSTestSuite) TestAVS() {
 		SlashAddr:           utiltx.GenerateAddress().String(),
 		AvsOwnerAddress:     avsOwnerAddress,
 		AssetIDs:            assetID,
-		AvsUnbondingPeriod:  7,
+		AvsUnbondingPeriod:  2,
 		MinSelfDelegation:   10,
 		EpochIdentifier:     epochstypes.DayEpochID,
 		StartingEpoch:       1,
@@ -74,7 +74,7 @@ func (suite *AVSTestSuite) TestUpdateAVSInfo_Register() {
 		AvsOwnerAddress:    avsOwnerAddress,
 		AssetID:            assetID,
 		MinSelfDelegation:  uint64(10),
-		UnbondingPeriod:    uint64(7),
+		UnbondingPeriod:    uint64(2),
 		SlashContractAddr:  slashAddress,
 		EpochIdentifier:    epochstypes.DayEpochID,
 	}

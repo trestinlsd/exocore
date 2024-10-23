@@ -5,7 +5,6 @@ import (
 	"time"
 
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
-	avskeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
 
@@ -94,7 +93,7 @@ func (suite *OperatorTestSuite) prepare() {
 
 func (suite *OperatorTestSuite) prepareAvs(assetIDs []string) {
 	err := suite.App.AVSManagerKeeper.UpdateAVSInfo(suite.Ctx, &avstypes.AVSRegisterOrDeregisterParams{
-		Action:          avskeeper.RegisterAction,
+		Action:          avstypes.RegisterAction,
 		EpochIdentifier: epochstypes.HourEpochID,
 		AvsAddress:      suite.avsAddr,
 		AssetID:         assetIDs,

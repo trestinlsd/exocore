@@ -798,30 +798,6 @@
 			},
 			{
 				"internalType": "string",
-				"name": "metaInfo",
-				"type": "string"
-			}
-		],
-		"name": "registerOperatorToExocore",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "success",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "sender",
-				"type": "address"
-			},
-			{
-				"internalType": "string",
 				"name": "avsName",
 				"type": "string"
 			},

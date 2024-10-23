@@ -29,24 +29,6 @@ interface IAVSManager {
         string blsSignature, string taskContractAddress, string stage, bool success);
 
 
-    struct TaskInfo {
-        string taskContractAddress;
-        string name;
-        bytes hash;
-        uint64 taskId;
-        uint64 taskResponsePeriod;
-        uint64 taskStatisticalPeriod;
-        uint64 taskChallengePeriod;
-        uint64 thresholdPercentage;
-        uint64 startingEpoch;
-        uint64 actualThreshold;
-        string[] optInOperators;
-        string[] signedOperators;
-        string[] noSignedOperators;
-        string[] errSignedOperators;
-        string taskTotalPower;
-        // OperatorActivePowerList is not defined here as it's not clear from the provided message
-    }
     /// @dev Register AVS contract to EXO.
     /// @param sender The external address for calling this method.
     /// @param avsName The name of AVS.
@@ -175,14 +157,6 @@ interface IAVSManager {
         bytes calldata pubKey,
         bytes calldata pubkeyRegistrationSignature,
         bytes calldata pubkeyRegistrationMessageHash
-    ) external returns (bool success);
-
-    /// @dev registerOperatorToExocore ,  this function enables  a precompile handler for creating a RegisterOperatorReq.
-    /// @param sender The external address for calling this method.
-    /// @param metaInfo The data supplied by the contract, usually ABI-encoded.
-    function registerOperatorToExocore(
-        address sender,
-        string memory metaInfo
     ) external returns (bool success);
 
     /// @dev operatorSubmitTask ,  this function enables a operator submit a task result.

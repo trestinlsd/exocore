@@ -3,7 +3,6 @@ package avs
 import (
 	"encoding/hex"
 
-	avskeep "github.com/ExocoreNetwork/exocore/x/avs/keeper"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -12,16 +11,15 @@ import (
 )
 
 const (
-	EventTypeAVSRegistered               = "AVSRegistered"
-	EventTypeAVSUpdated                  = "AVSUpdated"
-	EventTypeAVSDeregistered             = "AVSDeregistered"
-	EventTypeOperatorJoined              = "OperatorJoined"
-	EventTypeOperatorOuted               = "OperatorOuted"
-	EventTypeTaskCreated                 = "TaskCreated"
-	EventTypeChallengeInitiated          = "ChallengeInitiated"
-	EventTypePublicKeyRegistered         = "PublicKeyRegistered"
-	EventTypeOperatorRegisteredToExocore = "OperatorRegisteredToExocore"
-	EventTypeTaskSubmittedByOperator     = "TaskSubmittedByOperator"
+	EventTypeAVSRegistered           = "AVSRegistered"
+	EventTypeAVSUpdated              = "AVSUpdated"
+	EventTypeAVSDeregistered         = "AVSDeregistered"
+	EventTypeOperatorJoined          = "OperatorJoined"
+	EventTypeOperatorOuted           = "OperatorOuted"
+	EventTypeTaskCreated             = "TaskCreated"
+	EventTypeChallengeInitiated      = "ChallengeInitiated"
+	EventTypePublicKeyRegistered     = "PublicKeyRegistered"
+	EventTypeTaskSubmittedByOperator = "TaskSubmittedByOperator"
 )
 
 // EmitAVSRegistered emits an Ethereum event when an AVS (Autonomous Verification Service) is registered.
@@ -127,7 +125,7 @@ func (p Precompile) EmitAVSDeregistered(ctx sdk.Context, stateDB vm.StateDB, avs
 	return nil
 }
 
-func (p Precompile) EmitOperatorJoined(ctx sdk.Context, stateDB vm.StateDB, params *avskeep.OperatorOptParams) error {
+func (p Precompile) EmitOperatorJoined(ctx sdk.Context, stateDB vm.StateDB, params *avstypes.OperatorOptParams) error {
 	// Prepare the event topics
 	event := p.ABI.Events[EventTypeOperatorJoined]
 
@@ -157,7 +155,7 @@ func (p Precompile) EmitOperatorJoined(ctx sdk.Context, stateDB vm.StateDB, para
 	return nil
 }
 
-func (p Precompile) EmitOperatorOuted(ctx sdk.Context, stateDB vm.StateDB, params *avskeep.OperatorOptParams) error {
+func (p Precompile) EmitOperatorOuted(ctx sdk.Context, stateDB vm.StateDB, params *avstypes.OperatorOptParams) error {
 	// Prepare the event topics
 	event := p.ABI.Events[EventTypeOperatorOuted]
 
@@ -187,7 +185,7 @@ func (p Precompile) EmitOperatorOuted(ctx sdk.Context, stateDB vm.StateDB, param
 	return nil
 }
 
-func (p Precompile) EmitTaskCreated(ctx sdk.Context, stateDB vm.StateDB, task *avskeep.TaskInfoParams) error {
+func (p Precompile) EmitTaskCreated(ctx sdk.Context, stateDB vm.StateDB, task *avstypes.TaskInfoParams) error {
 	// Prepare the event topics
 	event := p.ABI.Events[EventTypeTaskCreated]
 
@@ -224,7 +222,7 @@ func (p Precompile) EmitTaskCreated(ctx sdk.Context, stateDB vm.StateDB, task *a
 	return nil
 }
 
-func (p Precompile) EmitChallengeInitiated(ctx sdk.Context, stateDB vm.StateDB, params *avskeep.ChallengeParams) error {
+func (p Precompile) EmitChallengeInitiated(ctx sdk.Context, stateDB vm.StateDB, params *avstypes.ChallengeParams) error {
 	// Prepare the event topics
 	event := p.ABI.Events[EventTypeChallengeInitiated]
 
@@ -236,7 +234,7 @@ func (p Precompile) EmitChallengeInitiated(ctx sdk.Context, stateDB vm.StateDB, 
 	var err error
 
 	// Pack the arguments to be used as the Data field
-	arguments := event.Inputs[0:5]
+	arguments := event.Inputs[0:6]
 	packed, err := arguments.Pack(
 		common.HexToAddress(params.CallerAddress),
 		params.TaskHash,
@@ -258,7 +256,7 @@ func (p Precompile) EmitChallengeInitiated(ctx sdk.Context, stateDB vm.StateDB, 
 	return nil
 }
 
-func (p Precompile) EmitPublicKeyRegistered(ctx sdk.Context, stateDB vm.StateDB, params *avskeep.BlsParams) error {
+func (p Precompile) EmitPublicKeyRegistered(ctx sdk.Context, stateDB vm.StateDB, params *avstypes.BlsParams) error {
 	// Prepare the event topics
 	event := p.ABI.Events[EventTypePublicKeyRegistered]
 
@@ -270,7 +268,7 @@ func (p Precompile) EmitPublicKeyRegistered(ctx sdk.Context, stateDB vm.StateDB,
 	var err error
 
 	// Pack the arguments to be used as the Data field
-	arguments := event.Inputs[0:2]
+	arguments := event.Inputs[0:3]
 	packed, err := arguments.Pack(
 		common.HexToAddress(params.Operator),
 		params.Name,
@@ -289,38 +287,7 @@ func (p Precompile) EmitPublicKeyRegistered(ctx sdk.Context, stateDB vm.StateDB,
 	return nil
 }
 
-func (p Precompile) EmitOperatorRegisteredToExocore(ctx sdk.Context, stateDB vm.StateDB, params *avskeep.OperatorParams) error {
-	// Prepare the event topics
-	event := p.ABI.Events[EventTypeOperatorRegisteredToExocore]
-
-	topics := make([]common.Hash, 1)
-
-	// The first topic is always the signature of the event.
-	topics[0] = event.ID
-
-	var err error
-
-	// Pack the arguments to be used as the Data field
-	arguments := event.Inputs[0:3]
-	packed, err := arguments.Pack(
-		common.HexToAddress(params.CallerAddress),
-		params.OperatorMetaInfo,
-		true)
-	if err != nil {
-		return err
-	}
-
-	stateDB.AddLog(&ethtypes.Log{
-		Address:     p.Address(),
-		Topics:      topics,
-		Data:        packed,
-		BlockNumber: uint64(ctx.BlockHeight()),
-	})
-
-	return nil
-}
-
-func (p Precompile) EmitTaskSubmittedByOperator(ctx sdk.Context, stateDB vm.StateDB, params *avskeep.TaskResultParams) error {
+func (p Precompile) EmitTaskSubmittedByOperator(ctx sdk.Context, stateDB vm.StateDB, params *avstypes.TaskResultParams) error {
 	// Prepare the event topics
 	event := p.ABI.Events[EventTypeTaskSubmittedByOperator]
 

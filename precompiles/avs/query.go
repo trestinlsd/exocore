@@ -1,10 +1,8 @@
 package avs
 
 import (
+	"errors"
 	"fmt"
-	"strconv"
-	"strings"
-
 	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
 	avstype "github.com/ExocoreNetwork/exocore/x/avs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -12,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
 	cmn "github.com/evmos/evmos/v16/precompiles/common"
+	"strconv"
 )
 
 const (
@@ -133,7 +132,7 @@ func (p Precompile) GetAVSInfo(
 	avs, err := p.avsKeeper.QueryAVSInfo(ctx, &avstype.QueryAVSInfoReq{AVSAddress: addr.String()})
 	if err != nil {
 		// if the avs does not exist, return empty array
-		if strings.Contains(err.Error(), avstype.ErrNoKeyInTheStore.Error()) {
+		if errors.Is(err, avstype.ErrNoKeyInTheStore) {
 			return method.Outputs.Pack("")
 		}
 		return nil, err
@@ -187,7 +186,7 @@ func (p Precompile) GetTaskInfo(
 	task, err := p.avsKeeper.QueryAVSTaskInfo(ctx, &avstype.QueryAVSTaskInfoReq{TaskAddr: addr.String(), TaskId: strconv.FormatUint(taskID, 10)})
 	if err != nil {
 		// if the avs does not exist, return empty array
-		if strings.Contains(err.Error(), avstype.ErrNoKeyInTheStore.Error()) {
+		if errors.Is(err, avstype.ErrNoKeyInTheStore) {
 			return method.Outputs.Pack("")
 		}
 		return nil, err

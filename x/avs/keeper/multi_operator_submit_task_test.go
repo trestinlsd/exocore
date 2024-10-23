@@ -7,7 +7,6 @@ import (
 	sdkmath "cosmossdk.io/math"
 	assetskeeper "github.com/ExocoreNetwork/exocore/x/assets/keeper"
 	assetstypes "github.com/ExocoreNetwork/exocore/x/assets/types"
-	avskeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	delegationtype "github.com/ExocoreNetwork/exocore/x/delegation/types"
 	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
@@ -86,7 +85,7 @@ func (suite *AVSTestSuite) prepareMulDelegation(operatorAddress sdk.AccAddress, 
 func (suite *AVSTestSuite) prepareMulAvs(assetIDs []string) {
 	err := suite.App.AVSManagerKeeper.UpdateAVSInfo(suite.Ctx, &avstypes.AVSRegisterOrDeregisterParams{
 		AvsName:             "avs01",
-		Action:              avskeeper.RegisterAction,
+		Action:              avstypes.RegisterAction,
 		EpochIdentifier:     epochstypes.HourEpochID,
 		AvsAddress:          suite.avsAddr,
 		AssetID:             assetIDs,

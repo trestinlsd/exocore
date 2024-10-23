@@ -162,7 +162,7 @@ func (k Keeper) RegisterAVSWithChainID(
 	}
 	// SetAVSInfo expects HexAddress for the AvsAddress
 	params.AvsAddress = avsAddrStr
-	params.Action = RegisterAction
+	params.Action = types.RegisterAction
 
 	if err := k.UpdateAVSInfo(ctx, params); err != nil {
 		return common.Address{}, err

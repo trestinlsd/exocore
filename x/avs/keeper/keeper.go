@@ -88,7 +88,7 @@ func (k Keeper) UpdateAVSInfo(ctx sdk.Context, params *types.AVSRegisterOrDeregi
 		return errorsmod.Wrap(types.ErrEpochNotFound, fmt.Sprintf("epoch info not found %s", epochIdentifier))
 	}
 	switch action {
-	case RegisterAction:
+	case types.RegisterAction:
 		if avsInfo != nil {
 			return errorsmod.Wrap(types.ErrAlreadyRegistered, fmt.Sprintf("the avsaddress is :%s", params.AvsAddress))
 		}
@@ -127,7 +127,7 @@ func (k Keeper) UpdateAVSInfo(ctx sdk.Context, params *types.AVSRegisterOrDeregi
 		}
 
 		return k.SetAVSInfo(ctx, avs)
-	case DeRegisterAction:
+	case types.DeRegisterAction:
 		if avsInfo == nil {
 			return errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("the avsaddress is :%s", params.AvsAddress))
 		}
@@ -147,7 +147,7 @@ func (k Keeper) UpdateAVSInfo(ctx sdk.Context, params *types.AVSRegisterOrDeregi
 			return errorsmod.Wrap(types.ErrAvsNameMismatch, fmt.Sprintf("Unregistered AVS name is incorrect %s", params.AvsName))
 		}
 		return k.DeleteAVSInfo(ctx, params.AvsAddress)
-	case UpdateAction:
+	case types.UpdateAction:
 		if avsInfo == nil {
 			return errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("the avsaddress is :%s", params.AvsAddress))
 		}
@@ -225,7 +225,7 @@ func (k Keeper) UpdateAVSInfo(ctx sdk.Context, params *types.AVSRegisterOrDeregi
 	}
 }
 
-func (k Keeper) CreateAVSTask(ctx sdk.Context, params *TaskInfoParams) (uint64, error) {
+func (k Keeper) CreateAVSTask(ctx sdk.Context, params *types.TaskInfoParams) (uint64, error) {
 	avsInfo := k.GetAVSInfoByTaskAddress(ctx, params.TaskContractAddress)
 	if avsInfo.AvsAddress == "" {
 		return 0, errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("the taskaddr is :%s", params.TaskContractAddress))
@@ -269,7 +269,7 @@ func (k Keeper) CreateAVSTask(ctx sdk.Context, params *TaskInfoParams) (uint64, 
 	return task.TaskId, k.SetTaskInfo(ctx, task)
 }
 
-func (k Keeper) RegisterBLSPublicKey(ctx sdk.Context, params *BlsParams) error {
+func (k Keeper) RegisterBLSPublicKey(ctx sdk.Context, params *types.BlsParams) error {
 	// check bls signature to prevent rogue key attacks
 	sig := params.PubkeyRegistrationSignature
 	msgHash := params.PubkeyRegistrationMessageHash
@@ -290,7 +290,7 @@ func (k Keeper) RegisterBLSPublicKey(ctx sdk.Context, params *BlsParams) error {
 	return k.SetOperatorPubKey(ctx, bls)
 }
 
-func (k Keeper) OperatorOptAction(ctx sdk.Context, params *OperatorOptParams) error {
+func (k Keeper) OperatorOptAction(ctx sdk.Context, params *types.OperatorOptParams) error {
 	operatorAddress := params.OperatorAddress
 	opAccAddr, err := sdk.AccAddressFromBech32(operatorAddress)
 	if err != nil {
@@ -310,9 +310,9 @@ func (k Keeper) OperatorOptAction(ctx sdk.Context, params *OperatorOptParams) er
 	}
 
 	switch params.Action {
-	case RegisterAction:
+	case types.RegisterAction:
 		return k.operatorKeeper.OptIn(ctx, opAccAddr, params.AvsAddress)
-	case DeRegisterAction:
+	case types.DeRegisterAction:
 		return k.operatorKeeper.OptOut(ctx, opAccAddr, params.AvsAddress)
 	default:
 		return errorsmod.Wrap(types.ErrInvalidAction, fmt.Sprintf("Invalid action: %d", params.Action))
@@ -387,7 +387,7 @@ func (k Keeper) IterateAVSInfo(ctx sdk.Context, fn func(index int64, avsInfo typ
 	}
 }
 
-func (k Keeper) RaiseAndResolveChallenge(ctx sdk.Context, params *ChallengeParams) error {
+func (k Keeper) RaiseAndResolveChallenge(ctx sdk.Context, params *types.ChallengeParams) error {
 	taskInfo, err := k.GetTaskInfo(ctx, strconv.FormatUint(params.TaskID, 10), params.TaskContractAddress.String())
 	if err != nil {
 		return fmt.Errorf("task does not exist,this task address: %s", params.TaskContractAddress)
@@ -446,7 +446,7 @@ func (k Keeper) RaiseAndResolveChallenge(ctx sdk.Context, params *ChallengeParam
 		params.TaskContractAddress)
 }
 
-func (k Keeper) SubmitTaskResult(ctx sdk.Context, params *TaskResultParams) error {
+func (k Keeper) SubmitTaskResult(ctx sdk.Context, params *types.TaskResultParams) error {
 	result := &types.TaskResultInfo{
 		TaskId:              params.TaskID,
 		OperatorAddress:     params.OperatorAddress,

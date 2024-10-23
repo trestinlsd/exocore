@@ -1,8 +1,6 @@
 package types
 
 import (
-	"context"
-
 	sdkmath "cosmossdk.io/math"
 	assetstype "github.com/ExocoreNetwork/exocore/x/assets/types"
 	epochstypes "github.com/ExocoreNetwork/exocore/x/epochs/types"
@@ -45,7 +43,7 @@ type OperatorKeeper interface {
 	GetOperatorOptedUSDValue(ctx sdk.Context, avsAddr, operatorAddr string) (operatortypes.OperatorOptedUSDValue, error)
 	GetAVSUSDValue(ctx sdk.Context, avsAddr string) (sdkmath.LegacyDec, error)
 	SetOperatorInfo(ctx sdk.Context, addr string, info *operatortypes.OperatorInfo) (err error)
-	QueryOperatorInfo(ctx context.Context, req *operatortypes.GetOperatorInfoReq) (*operatortypes.OperatorInfo, error)
+	OperatorInfo(ctx sdk.Context, addr string) (info *operatortypes.OperatorInfo, err error)
 }
 
 // AssetsKeeper represents the expected keeper interface for the assets module.
@@ -54,5 +52,4 @@ type AssetsKeeper interface {
 		ctx sdk.Context, assetID string,
 	) (info *assetstype.StakingAssetInfo, err error)
 	IsStakingAsset(sdk.Context, string) bool
-	QueOperatorAssetInfos(ctx context.Context, infos *assetstype.QueryOperatorAssetInfos) (*assetstype.QueryOperatorAssetInfosResponse, error)
 }

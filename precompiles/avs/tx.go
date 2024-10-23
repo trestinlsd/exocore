@@ -5,12 +5,9 @@ import (
 	"fmt"
 	"slices"
 
-	operatortypes "github.com/ExocoreNetwork/exocore/x/operator/types"
-
 	errorsmod "cosmossdk.io/errors"
 
 	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
-	avskeeper "github.com/ExocoreNetwork/exocore/x/avs/keeper"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -28,7 +25,6 @@ const (
 	MethodCreateAVSTask             = "createTask"
 	MethodRegisterBLSPublicKey      = "registerBLSPublicKey"
 	MethodChallenge                 = "challenge"
-	MethodRegisterOperatorToExocore = "registerOperatorToExocore"
 	MethodOperatorSubmitTask        = "operatorSubmitTask"
 )
 
@@ -52,7 +48,7 @@ func (p Precompile) RegisterAVS(
 	}
 	// The AVS registration is done by the calling contract.
 	avsParams.AvsAddress = contract.CallerAddress.String()
-	avsParams.Action = avskeeper.RegisterAction
+	avsParams.Action = avstypes.RegisterAction
 	// Finally, update the AVS information in the keeper.
 	err = p.avsKeeper.UpdateAVSInfo(ctx, avsParams)
 	if err != nil {
@@ -89,7 +85,7 @@ func (p Precompile) DeregisterAVS(
 	avsParams.AvsName = avsName
 
 	avsParams.AvsAddress = contract.CallerAddress.String()
-	avsParams.Action = avskeeper.DeRegisterAction
+	avsParams.Action = avstypes.DeRegisterAction
 	// validates that this is owner
 
 	err := p.avsKeeper.UpdateAVSInfo(ctx, avsParams)
@@ -117,7 +113,7 @@ func (p Precompile) UpdateAVS(
 	}
 
 	avsParams.AvsAddress = contract.CallerAddress.String()
-	avsParams.Action = avskeeper.UpdateAction
+	avsParams.Action = avstypes.UpdateAction
 	previousAVSInfo, err := p.avsKeeper.GetAVSInfo(ctx, avsParams.AvsAddress)
 	if err != nil {
 		return nil, err
@@ -153,10 +149,10 @@ func (p Precompile) BindOperatorToAVS(
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "common.Address", callerAddress)
 	}
 
-	operatorParams := &avskeeper.OperatorOptParams{}
+	operatorParams := &avstypes.OperatorOptParams{}
 	operatorParams.OperatorAddress = sdk.AccAddress(callerAddress[:]).String()
 	operatorParams.AvsAddress = contract.CallerAddress.String()
-	operatorParams.Action = avskeeper.RegisterAction
+	operatorParams.Action = avstypes.RegisterAction
 	err := p.avsKeeper.OperatorOptAction(ctx, operatorParams)
 	if err != nil {
 		return nil, err
@@ -182,10 +178,10 @@ func (p Precompile) UnbindOperatorToAVS(
 	if !ok || (callerAddress == common.Address{}) {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "common.Address", callerAddress)
 	}
-	operatorParams := &avskeeper.OperatorOptParams{}
+	operatorParams := &avstypes.OperatorOptParams{}
 	operatorParams.OperatorAddress = sdk.AccAddress(callerAddress[:]).String()
 	operatorParams.AvsAddress = contract.CallerAddress.String()
-	operatorParams.Action = avskeeper.DeRegisterAction
+	operatorParams.Action = avstypes.DeRegisterAction
 	err := p.avsKeeper.OperatorOptAction(ctx, operatorParams)
 	if err != nil {
 		return nil, err
@@ -232,7 +228,7 @@ func (p Precompile) Challenge(
 	if len(args) != len(p.ABI.Methods[MethodChallenge].Inputs) {
 		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodChallenge].Inputs), len(args))
 	}
-	challengeParams := &avskeeper.ChallengeParams{}
+	challengeParams := &avstypes.ChallengeParams{}
 	challengeParams.TaskContractAddress = contract.CallerAddress
 	callerAddress, ok := args[0].(common.Address)
 	if !ok || (callerAddress == common.Address{}) {
@@ -291,7 +287,7 @@ func (p Precompile) RegisterBLSPublicKey(
 	if len(args) != len(p.ABI.Methods[MethodRegisterBLSPublicKey].Inputs) {
 		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodRegisterBLSPublicKey].Inputs), len(args))
 	}
-	blsParams := &avskeeper.BlsParams{}
+	blsParams := &avstypes.BlsParams{}
 	callerAddress, ok := args[0].(common.Address)
 	if !ok || (callerAddress == common.Address{}) {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "common.Address", callerAddress)
@@ -332,8 +328,8 @@ func (p Precompile) RegisterBLSPublicKey(
 	return method.Outputs.Pack(true)
 }
 
-// RegisterOperatorToExocore operator register.
-func (p Precompile) RegisterOperatorToExocore(
+// OperatorSubmitTask operator submit results
+func (p Precompile) OperatorSubmitTask(
 	ctx sdk.Context,
 	_ common.Address,
 	_ *vm.Contract,
@@ -341,49 +337,11 @@ func (p Precompile) RegisterOperatorToExocore(
 	method *abi.Method,
 	args []interface{},
 ) ([]byte, error) {
-	if len(args) != len(p.ABI.Methods[MethodRegisterOperatorToExocore].Inputs) {
-		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodRegisterOperatorToExocore].Inputs), len(args))
-	}
-	operatorParams := &avskeeper.OperatorParams{}
-	callerAddress, ok := args[0].(common.Address)
-	if !ok || (callerAddress == common.Address{}) {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "common.Address", callerAddress)
-	}
-	operatorParams.CallerAddress = sdk.AccAddress(callerAddress[:]).String()
-
-	OperatorMetaInfo, ok := args[1].(string)
-	if !ok || OperatorMetaInfo == "" {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "string", OperatorMetaInfo)
-	}
-	operatorParams.OperatorMetaInfo = OperatorMetaInfo
-	info := operatortypes.OperatorInfo{
-		OperatorMetaInfo: OperatorMetaInfo,
-	}
-	err := p.avsKeeper.GetOperatorKeeper().SetOperatorInfo(ctx, operatorParams.CallerAddress, &info)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = p.EmitOperatorRegisteredToExocore(ctx, stateDB, operatorParams); err != nil {
-		return nil, err
-	}
-	return method.Outputs.Pack(true)
-}
-
-// OperatorSubmitTask operator submit results
-func (p Precompile) OperatorSubmitTask(
-	ctx sdk.Context,
-	_ common.Address,
-	contract *vm.Contract,
-	stateDB vm.StateDB,
-	method *abi.Method,
-	args []interface{},
-) ([]byte, error) {
 	if len(args) != len(p.ABI.Methods[MethodOperatorSubmitTask].Inputs) {
 		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, len(p.ABI.Methods[MethodOperatorSubmitTask].Inputs), len(args))
 	}
-	resultParams := &avskeeper.TaskResultParams{}
-	resultParams.TaskContractAddress = contract.CallerAddress
+	resultParams := &avstypes.TaskResultParams{}
+
 	callerAddress, ok := args[0].(common.Address)
 	if !ok || (callerAddress == common.Address{}) {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "common.Address", callerAddress)

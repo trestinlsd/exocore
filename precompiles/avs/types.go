@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	exocmn "github.com/ExocoreNetwork/exocore/precompiles/common"
-	avskeep "github.com/ExocoreNetwork/exocore/x/avs/keeper"
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -220,11 +219,11 @@ func (p Precompile) GetAVSParamsFromUpdateInputs(_ sdk.Context, args []interface
 	return avsParams, nil
 }
 
-func (p Precompile) GetTaskParamsFromInputs(_ sdk.Context, args []interface{}) (*avskeep.TaskInfoParams, error) {
+func (p Precompile) GetTaskParamsFromInputs(_ sdk.Context, args []interface{}) (*avstypes.TaskInfoParams, error) {
 	if len(args) != len(p.ABI.Methods[MethodCreateAVSTask].Inputs) {
 		return nil, fmt.Errorf(cmn.ErrInvalidNumberOfArgs, 3, len(args))
 	}
-	taskParams := &avskeep.TaskInfoParams{}
+	taskParams := &avstypes.TaskInfoParams{}
 	callerAddress, ok := args[0].(common.Address)
 	if !ok || (callerAddress == common.Address{}) {
 		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 0, "common.Address", callerAddress)
