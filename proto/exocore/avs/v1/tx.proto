@@ -226,9 +226,9 @@ message TaskResultInfo {
   string task_contract_address = 5;
   // task_id is the  task id
   uint64 task_id = 6;
-  // stage this field is used to solve the problem of task results being copied by other operators.
-  // It is a two-stage submission with two values, 1 and 2
-  string stage = 7;
+  // phase this field is used to solve the problem of task results being copied by other operators.
+  // It is a two-phase submission with two values, 0 and 1
+  uint32 phase = 7;
 }
 
 // SubmitTaskResultReq is the request to submit task results.

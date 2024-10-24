@@ -182,8 +182,8 @@ func (k *Keeper) SetTaskResultInfo(
 			avsInfo.EpochIdentifier))
 	}
 
-	switch info.Stage {
-	case types.TwoPhaseCommitOne:
+	switch info.Phase {
+	case uint32(types.PreparePhase):
 		if k.IsExistTaskResultInfo(ctx, info.OperatorAddress, info.TaskContractAddress, info.TaskId) {
 			return errorsmod.Wrap(
 				types.ErrResAlreadyExists,
@@ -221,7 +221,7 @@ func (k *Keeper) SetTaskResultInfo(
 		store.Set(infoKey, bz)
 		return nil
 
-	case types.TwoPhaseCommitTwo:
+	case uint32(types.DoCommitPhase):
 		// check task response
 		if info.TaskResponse == nil {
 			return errorsmod.Wrap(
@@ -284,7 +284,7 @@ func (k *Keeper) SetTaskResultInfo(
 	default:
 		return errorsmod.Wrap(
 			types.ErrParamError,
-			fmt.Sprintf("SetTaskResultInfo: invalid param value:%s", info.Stage),
+			fmt.Sprintf("SetTaskResultInfo: invalid param value:%d", info.Phase),
 		)
 	}
 }

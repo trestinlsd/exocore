@@ -370,12 +370,34 @@ func (suite *AVSManagerPrecompileSuite) TestUpdateAVS() {
 			params,
 		)
 		suite.Require().NoError(err, "failed to pack input")
-		return common.HexToAddress("0x3e108c058e8066DA635321Dc3018294cA82ddEdf"), input
+		return suite.Address, input
 	}
 
 	successRet, err := suite.precompile.Methods[avs.MethodUpdateAVS].Outputs.Pack(true)
 	suite.Require().NoError(err)
+	setUp := func() {
+		avs := &types.AVSInfo{
+			Name:                avsName,
+			AvsAddress:          suite.Address.String(),
+			SlashAddr:           slashAddress,
+			RewardAddr:          rewardAddress,
+			AvsOwnerAddress:     avsOwnerAddress,
+			AssetIDs:            assetID,
+			AvsUnbondingPeriod:  avsUnbondingPeriod,
+			MinSelfDelegation:   minSelfDelegation,
+			EpochIdentifier:     epochIdentifier,
+			StartingEpoch:       1,
+			TaskAddr:            taskAddr,
+			MinStakeAmount:      minStakeAmount,
+			MinOptInOperators:   params[0],
+			MinTotalStakeAmount: params[1],
+			AvsReward:           sdk.MustNewDecFromStr(strconv.FormatUint(params[1], 10)),
+			AvsSlash:            sdk.MustNewDecFromStr(strconv.FormatUint(params[2], 10)),
+		}
 
+		err := suite.App.AVSManagerKeeper.SetAVSInfo(suite.Ctx, avs)
+		suite.NoError(err)
+	}
 	testcases := []struct {
 		name        string
 		malleate    func() (common.Address, []byte)
@@ -387,7 +409,7 @@ func (suite *AVSManagerPrecompileSuite) TestUpdateAVS() {
 		{
 			name: "pass for avs-update",
 			malleate: func() (common.Address, []byte) {
-				suite.TestRegisterAVS()
+				setUp()
 				return commonMalleate()
 			},
 			readOnly:    false,
@@ -407,7 +429,7 @@ func (suite *AVSManagerPrecompileSuite) TestUpdateAVS() {
 			contract := vm.NewPrecompile(vm.AccountRef(caller), suite.precompile, big.NewInt(0), uint64(1e6))
 			contract.Input = input
 
-			contractAddr := contract.Address()
+			contractAddr := suite.Address
 			// Build and sign Ethereum transaction
 			txArgs := evmtypes.EvmTxArgs{
 				ChainID:   suite.App.EvmKeeper.ChainID(),
@@ -750,7 +772,7 @@ func (suite *AVSManagerPrecompileSuite) TestRunRegTaskInfo() {
 		suite.Require().NoError(err, "failed to pack input")
 		return suite.Address, input
 	}
-	successRet, err := suite.precompile.Methods[avs.MethodCreateAVSTask].Outputs.Pack(true, uint64(1))
+	successRet, err := suite.precompile.Methods[avs.MethodCreateAVSTask].Outputs.Pack(uint64(1))
 	suite.Require().NoError(err)
 	testcases := []struct {
 		name        string

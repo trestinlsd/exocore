@@ -1,7 +1,7 @@
 package avs
 
 import (
-	"encoding/hex"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 
 	avstypes "github.com/ExocoreNetwork/exocore/x/avs/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -22,6 +22,25 @@ const (
 	EventTypeTaskSubmittedByOperator = "TaskSubmittedByOperator"
 )
 
+func (p Precompile) emitEvent(ctx sdk.Context, stateDB vm.StateDB, eventName string, inputArgs abi.Arguments, args ...interface{}) error {
+	event := p.ABI.Events[eventName]
+	topics := []common.Hash{event.ID}
+
+	packed, err := inputArgs.Pack(args...)
+	if err != nil {
+		return err
+	}
+
+	stateDB.AddLog(&ethtypes.Log{
+		Address:     p.Address(),
+		Topics:      topics,
+		Data:        packed,
+		BlockNumber: uint64(ctx.BlockHeight()),
+	})
+
+	return nil
+}
+
 // EmitAVSRegistered emits an Ethereum event when an AVS (Autonomous Verification Service) is registered.
 //
 // Parameters:
@@ -33,172 +52,41 @@ const (
 // - An error if there is an issue packing the event data or adding the log to the state database.
 // - nil if the event is successfully emitted.
 func (p Precompile) EmitAVSRegistered(ctx sdk.Context, stateDB vm.StateDB, avs *avstypes.AVSRegisterOrDeregisterParams) error {
-	//  Prepare the event topics
-	event := p.ABI.Events[EventTypeAVSRegistered]
-
-	topics := make([]common.Hash, 1)
-
-	// The first topic is always the signature of the event.
-	topics[0] = event.ID
-
-	var err error
-
-	// Pack the arguments to be used as the Data field
-	arguments := event.Inputs[0:3]
-	packed, err := arguments.Pack(
+	arguments := p.ABI.Events[EventTypeAVSRegistered].Inputs
+	return p.emitEvent(ctx, stateDB, EventTypeAVSRegistered, arguments,
 		common.HexToAddress(avs.CallerAddress),
-		avs.AvsName,
-		true)
-	if err != nil {
-		return err
-	}
-
-	stateDB.AddLog(&ethtypes.Log{
-		Address:     p.Address(),
-		Topics:      topics,
-		Data:        packed,
-		BlockNumber: uint64(ctx.BlockHeight()),
-	})
-
-	return nil
+		avs.AvsName)
 }
 
 func (p Precompile) EmitAVSUpdated(ctx sdk.Context, stateDB vm.StateDB, avs *avstypes.AVSRegisterOrDeregisterParams) error {
-	// Prepare the event topics
-	event := p.ABI.Events[EventTypeAVSUpdated]
-
-	topics := make([]common.Hash, 1)
-
-	// The first topic is always the signature of the event.
-	topics[0] = event.ID
-
-	var err error
-
-	// Pack the arguments to be used as the Data field
-	arguments := event.Inputs[0:3]
-	packed, err := arguments.Pack(
+	arguments := p.ABI.Events[EventTypeAVSUpdated].Inputs
+	return p.emitEvent(ctx, stateDB, EventTypeAVSUpdated, arguments,
 		common.HexToAddress(avs.CallerAddress),
-		avs.AvsName,
-		true)
-	if err != nil {
-		return err
-	}
-
-	stateDB.AddLog(&ethtypes.Log{
-		Address:     p.Address(),
-		Topics:      topics,
-		Data:        packed,
-		BlockNumber: uint64(ctx.BlockHeight()),
-	})
-
-	return nil
+		avs.AvsName)
 }
 
 func (p Precompile) EmitAVSDeregistered(ctx sdk.Context, stateDB vm.StateDB, avs *avstypes.AVSRegisterOrDeregisterParams) error {
-	// Prepare the event topics
-	event := p.ABI.Events[EventTypeAVSDeregistered]
-
-	topics := make([]common.Hash, 1)
-
-	// The first topic is always the signature of the event.
-	topics[0] = event.ID
-
-	var err error
-
-	// Pack the arguments to be used as the Data field
-	arguments := event.Inputs[0:3]
-	packed, err := arguments.Pack(
+	arguments := p.ABI.Events[EventTypeAVSDeregistered].Inputs
+	return p.emitEvent(ctx, stateDB, EventTypeAVSDeregistered, arguments,
 		common.HexToAddress(avs.CallerAddress),
-		avs.AvsName,
-		true)
-	if err != nil {
-		return err
-	}
-
-	stateDB.AddLog(&ethtypes.Log{
-		Address:     p.Address(),
-		Topics:      topics,
-		Data:        packed,
-		BlockNumber: uint64(ctx.BlockHeight()),
-	})
-
-	return nil
+		avs.AvsName)
 }
 
 func (p Precompile) EmitOperatorJoined(ctx sdk.Context, stateDB vm.StateDB, params *avstypes.OperatorOptParams) error {
-	// Prepare the event topics
-	event := p.ABI.Events[EventTypeOperatorJoined]
-
-	topics := make([]common.Hash, 1)
-
-	// The first topic is always the signature of the event.
-	topics[0] = event.ID
-
-	var err error
-
-	// Pack the arguments to be used as the Data field
-	arguments := event.Inputs[0:2]
-	packed, err := arguments.Pack(
-		common.HexToAddress(params.OperatorAddress),
-		true)
-	if err != nil {
-		return err
-	}
-
-	stateDB.AddLog(&ethtypes.Log{
-		Address:     p.Address(),
-		Topics:      topics,
-		Data:        packed,
-		BlockNumber: uint64(ctx.BlockHeight()),
-	})
-
-	return nil
+	arguments := p.ABI.Events[EventTypeOperatorJoined].Inputs
+	return p.emitEvent(ctx, stateDB, EventTypeOperatorJoined, arguments,
+		common.HexToAddress(params.OperatorAddress))
 }
 
 func (p Precompile) EmitOperatorOuted(ctx sdk.Context, stateDB vm.StateDB, params *avstypes.OperatorOptParams) error {
-	// Prepare the event topics
-	event := p.ABI.Events[EventTypeOperatorOuted]
-
-	topics := make([]common.Hash, 1)
-
-	// The first topic is always the signature of the event.
-	topics[0] = event.ID
-
-	var err error
-
-	// Pack the arguments to be used as the Data field
-	arguments := event.Inputs[0:2]
-	packed, err := arguments.Pack(
-		common.HexToAddress(params.OperatorAddress),
-		true)
-	if err != nil {
-		return err
-	}
-
-	stateDB.AddLog(&ethtypes.Log{
-		Address:     p.Address(),
-		Topics:      topics,
-		Data:        packed,
-		BlockNumber: uint64(ctx.BlockHeight()),
-	})
-
-	return nil
+	arguments := p.ABI.Events[EventTypeOperatorOuted].Inputs
+	return p.emitEvent(ctx, stateDB, EventTypeOperatorOuted, arguments,
+		common.HexToAddress(params.OperatorAddress))
 }
 
 func (p Precompile) EmitTaskCreated(ctx sdk.Context, stateDB vm.StateDB, task *avstypes.TaskInfoParams) error {
-	// Prepare the event topics
-	event := p.ABI.Events[EventTypeTaskCreated]
-
-	topics := make([]common.Hash, 1)
-
-	// The first topic is always the signature of the event.
-	topics[0] = event.ID
-
-	var err error
-
-	// Pack the arguments to be used as the Data field
-	arguments := event.Inputs[0:9]
-	packed, err := arguments.Pack(
+	arguments := p.ABI.Events[EventTypeTaskCreated].Inputs
+	return p.emitEvent(ctx, stateDB, EventTypeTaskCreated, arguments,
 		common.HexToAddress(task.CallerAddress),
 		task.TaskID,
 		common.HexToAddress(task.TaskContractAddress),
@@ -208,116 +96,32 @@ func (p Precompile) EmitTaskCreated(ctx sdk.Context, stateDB vm.StateDB, task *a
 		task.TaskChallengePeriod,
 		task.ThresholdPercentage,
 		task.TaskStatisticalPeriod)
-	if err != nil {
-		return err
-	}
-
-	stateDB.AddLog(&ethtypes.Log{
-		Address:     p.Address(),
-		Topics:      topics,
-		Data:        packed,
-		BlockNumber: uint64(ctx.BlockHeight()),
-	})
-
-	return nil
 }
 
 func (p Precompile) EmitChallengeInitiated(ctx sdk.Context, stateDB vm.StateDB, params *avstypes.ChallengeParams) error {
-	// Prepare the event topics
-	event := p.ABI.Events[EventTypeChallengeInitiated]
-
-	topics := make([]common.Hash, 1)
-
-	// The first topic is always the signature of the event.
-	topics[0] = event.ID
-
-	var err error
-
-	// Pack the arguments to be used as the Data field
-	arguments := event.Inputs[0:6]
-	packed, err := arguments.Pack(
+	arguments := p.ABI.Events[EventTypeChallengeInitiated].Inputs
+	return p.emitEvent(ctx, stateDB, EventTypeChallengeInitiated, arguments,
 		common.HexToAddress(params.CallerAddress),
 		params.TaskHash,
 		params.TaskID,
 		params.TaskResponseHash,
-		params.OperatorAddress,
-		true)
-	if err != nil {
-		return err
-	}
-
-	stateDB.AddLog(&ethtypes.Log{
-		Address:     p.Address(),
-		Topics:      topics,
-		Data:        packed,
-		BlockNumber: uint64(ctx.BlockHeight()),
-	})
-
-	return nil
+		params.OperatorAddress.String())
 }
 
 func (p Precompile) EmitPublicKeyRegistered(ctx sdk.Context, stateDB vm.StateDB, params *avstypes.BlsParams) error {
-	// Prepare the event topics
-	event := p.ABI.Events[EventTypePublicKeyRegistered]
-
-	topics := make([]common.Hash, 1)
-
-	// The first topic is always the signature of the event.
-	topics[0] = event.ID
-
-	var err error
-
-	// Pack the arguments to be used as the Data field
-	arguments := event.Inputs[0:3]
-	packed, err := arguments.Pack(
+	arguments := p.ABI.Events[EventTypePublicKeyRegistered].Inputs
+	return p.emitEvent(ctx, stateDB, EventTypePublicKeyRegistered, arguments,
 		common.HexToAddress(params.Operator),
-		params.Name,
-		true)
-	if err != nil {
-		return err
-	}
-
-	stateDB.AddLog(&ethtypes.Log{
-		Address:     p.Address(),
-		Topics:      topics,
-		Data:        packed,
-		BlockNumber: uint64(ctx.BlockHeight()),
-	})
-
-	return nil
+		params.Name)
 }
 
 func (p Precompile) EmitTaskSubmittedByOperator(ctx sdk.Context, stateDB vm.StateDB, params *avstypes.TaskResultParams) error {
-	// Prepare the event topics
-	event := p.ABI.Events[EventTypeTaskSubmittedByOperator]
-
-	topics := make([]common.Hash, 1)
-
-	// The first topic is always the signature of the event.
-	topics[0] = event.ID
-
-	var err error
-
-	// Pack the arguments to be used as the Data field
-	arguments := event.Inputs[0:7]
-	packed, err := arguments.Pack(
+	arguments := p.ABI.Events[EventTypeTaskSubmittedByOperator].Inputs
+	return p.emitEvent(ctx, stateDB, EventTypeTaskSubmittedByOperator, arguments,
 		common.HexToAddress(params.CallerAddress),
 		params.TaskID,
-		hex.EncodeToString(params.TaskResponse),
-		hex.EncodeToString(params.BlsSignature),
-		params.TaskContractAddress.String(),
-		params.Stage,
-		true)
-	if err != nil {
-		return err
-	}
-
-	stateDB.AddLog(&ethtypes.Log{
-		Address:     p.Address(),
-		Topics:      topics,
-		Data:        packed,
-		BlockNumber: uint64(ctx.BlockHeight()),
-	})
-
-	return nil
+		params.TaskResponse,
+		params.BlsSignature,
+		params.TaskContractAddress,
+		params.Phase)
 }

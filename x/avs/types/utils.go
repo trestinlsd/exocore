@@ -5,21 +5,22 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
+// CommitPhase represents the phases of the Two-Phase Commit protocol
+type CommitPhase uint32
+
 const (
-	// TwoPhaseCommitOne The first stage of the two-stage submission.
-	TwoPhaseCommitOne = "1"
-	// TwoPhaseCommitTwo The second stage of submission.
-	TwoPhaseCommitTwo = "2"
+	PreparePhase CommitPhase = iota
+	DoCommitPhase
 )
 
 type OperatorOptParams struct {
-	Name            string
-	BlsPublicKey    string
-	IsRegistered    bool
-	Action          uint64
-	OperatorAddress string
-	Status          string
-	AvsAddress      string
+	Name            string `json:"name"`
+	BlsPublicKey    string `json:"bls_public_key"`
+	IsRegistered    bool   `json:"is_registered"`
+	Action          uint64 `json:"action"`
+	OperatorAddress string `json:"operator_address"`
+	Status          string `json:"status"`
+	AvsAddress      string `json:"avs_address"`
 }
 
 type TaskInfoParams struct {
@@ -88,13 +89,13 @@ type TaskResultParams struct {
 	BlsSignature        []byte         `json:"bls_signature"`
 	TaskContractAddress common.Address `json:"task_contract_address"`
 	TaskID              uint64         `json:"task_id"`
-	Stage               string         `json:"stage"`
+	Phase               uint8          `json:"phase"`
 	CallerAddress       string         `json:"caller_address"`
 }
 
 type OperatorParams struct {
-	EarningsAddr     string `json:"earnings_addr"`
-	ApproveAddr      string `json:"approve_addr"`
-	OperatorMetaInfo string `json:"operator_meta_info"`
-	CallerAddress    string `json:"caller_address"`
+	EarningsAddr     string         `json:"earnings_addr"`
+	ApproveAddr      string         `json:"approve_addr"`
+	OperatorMetaInfo string         `json:"operator_meta_info"`
+	CallerAddress    sdk.AccAddress `json:"caller_address"`
 }

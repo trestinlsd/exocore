@@ -13,12 +13,6 @@
 				"internalType": "string",
 				"name": "avsName",
 				"type": "string"
-			},
-			{
-				"indexed": false,
-				"internalType": "bool",
-				"name": "success",
-				"type": "bool"
 			}
 		],
 		"name": "AVSDeregistered",
@@ -38,12 +32,6 @@
 				"internalType": "string",
 				"name": "avsName",
 				"type": "string"
-			},
-			{
-				"indexed": false,
-				"internalType": "bool",
-				"name": "success",
-				"type": "bool"
 			}
 		],
 		"name": "AVSRegistered",
@@ -63,12 +51,6 @@
 				"internalType": "string",
 				"name": "avsName",
 				"type": "string"
-			},
-			{
-				"indexed": false,
-				"internalType": "bool",
-				"name": "success",
-				"type": "bool"
 			}
 		],
 		"name": "AVSUpdated",
@@ -106,12 +88,6 @@
 				"internalType": "string",
 				"name": "operatorAddress",
 				"type": "string"
-			},
-			{
-				"indexed": false,
-				"internalType": "bool",
-				"name": "success",
-				"type": "bool"
 			}
 		],
 		"name": "ChallengeInitiated",
@@ -125,12 +101,6 @@
 				"internalType": "address",
 				"name": "sender",
 				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "bool",
-				"name": "success",
-				"type": "bool"
 			}
 		],
 		"name": "OperatorJoined",
@@ -144,12 +114,6 @@
 				"internalType": "address",
 				"name": "sender",
 				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "bool",
-				"name": "success",
-				"type": "bool"
 			}
 		],
 		"name": "OperatorOuted",
@@ -167,39 +131,8 @@
 			{
 				"indexed": false,
 				"internalType": "string",
-				"name": "metaInfo",
-				"type": "string"
-			},
-			{
-				"indexed": false,
-				"internalType": "bool",
-				"name": "success",
-				"type": "bool"
-			}
-		],
-		"name": "OperatorRegisteredToExocore",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "sender",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "string",
 				"name": "name",
 				"type": "string"
-			},
-			{
-				"indexed": false,
-				"internalType": "bool",
-				"name": "success",
-				"type": "bool"
 			}
 		],
 		"name": "PublicKeyRegistered",
@@ -283,33 +216,27 @@
 			},
 			{
 				"indexed": false,
-				"internalType": "string",
+				"internalType": "bytes",
 				"name": "taskResponse",
-				"type": "string"
+				"type": "bytes"
 			},
 			{
 				"indexed": false,
-				"internalType": "string",
+				"internalType": "bytes",
 				"name": "blsSignature",
-				"type": "string"
+				"type": "bytes"
 			},
 			{
-				"indexed": false,
-				"internalType": "string",
+				"indexed": true,
+				"internalType": "address",
 				"name": "taskContractAddress",
-				"type": "string"
+				"type": "address"
 			},
 			{
 				"indexed": false,
-				"internalType": "string",
-				"name": "stage",
-				"type": "string"
-			},
-			{
-				"indexed": false,
-				"internalType": "bool",
-				"name": "success",
-				"type": "bool"
+				"internalType": "uint8",
+				"name": "phase",
+				"type": "uint8"
 			}
 		],
 		"name": "TaskSubmittedByOperator",
@@ -394,11 +321,6 @@
 		],
 		"name": "createTask",
 		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "success",
-				"type": "bool"
-			},
 			{
 				"internalType": "uint64",
 				"name": "taskID",
@@ -641,9 +563,9 @@
 				"type": "address"
 			},
 			{
-				"internalType": "string",
-				"name": "stage",
-				"type": "string"
+				"internalType": "uint8",
+				"name": "phase",
+				"type": "uint8"
 			}
 		],
 		"name": "operatorSubmitTask",

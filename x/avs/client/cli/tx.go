@@ -19,7 +19,7 @@ const (
 	FlagBlsSignature        = "bls-signature"
 	FlagTaskContractAddress = "task-contract-address"
 	FlagTaskID              = "task-id"
-	FlagStage               = "stage"
+	FlagPhase               = "phase"
 )
 
 // GetTxCmd returns the transaction commands for this module
@@ -78,14 +78,14 @@ func CmdSubmitTaskResult() *cobra.Command {
 	f.Uint64(
 		FlagTaskID, 1, "The  task id",
 	)
-	f.String(
-		FlagStage, "", "The stage is a two-stage submission with two values, 1 and 2",
+	f.Uint32(
+		FlagPhase, 0, "The phase is a two-phase submission with two values, 0 and 1",
 	)
 	// #nosec G703 // this only errors if the flag isn't defined.
 	_ = cmd.MarkFlagRequired(FlagTaskID)
 	_ = cmd.MarkFlagRequired(FlagBlsSignature)
 	_ = cmd.MarkFlagRequired(FlagTaskContractAddress)
-	_ = cmd.MarkFlagRequired(FlagStage)
+	_ = cmd.MarkFlagRequired(FlagPhase)
 
 	// transaction level flags from the SDK
 	flags.AddTxFlagsToCmd(cmd)
@@ -108,7 +108,7 @@ func newBuildMsg(
 	taskContractAddress, _ := fs.GetString(FlagTaskContractAddress)
 
 	taskID, _ := fs.GetUint64(FlagTaskID)
-	stage, _ := fs.GetString(FlagStage)
+	phase, _ := fs.GetUint32(FlagPhase)
 
 	msg := &types.SubmitTaskResultReq{
 		FromAddress: sender.String(),
@@ -118,7 +118,7 @@ func newBuildMsg(
 			BlsSignature:        sig,
 			TaskContractAddress: taskContractAddress,
 			TaskId:              taskID,
-			Stage:               stage,
+			Phase:               phase,
 		},
 	}
 	return msg

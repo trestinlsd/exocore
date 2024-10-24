@@ -213,7 +213,7 @@ func (p Precompile) CreateAVSTask(
 	if err = p.EmitTaskCreated(ctx, stateDB, params); err != nil {
 		return nil, err
 	}
-	return method.Outputs.Pack(true, taskID)
+	return method.Outputs.Pack(taskID)
 }
 
 // Challenge Middleware uses exocore's default avstask template to create tasks in avstask module.
@@ -301,7 +301,7 @@ func (p Precompile) RegisterBLSPublicKey(
 
 	pubkeyBz, ok := args[2].([]byte)
 	if !ok {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 3, "[]byte", pubkeyBz)
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 2, "[]byte", pubkeyBz)
 	}
 	blsParams.PubKey = pubkeyBz
 
@@ -350,7 +350,7 @@ func (p Precompile) OperatorSubmitTask(
 
 	taskID, ok := args[1].(uint64)
 	if !ok {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "uint64", taskID)
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 1, "uint64", args[1])
 	}
 	resultParams.TaskID = taskID
 
@@ -372,14 +372,23 @@ func (p Precompile) OperatorSubmitTask(
 	}
 	resultParams.TaskContractAddress = taskAddr
 
-	stage, ok := args[5].(string)
-	if !ok || stage == "" {
-		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 5, "string", stage)
+	phase, ok := args[5].(uint8)
+	if !ok {
+		return nil, fmt.Errorf(exocmn.ErrContractInputParaOrType, 5, "uint8", phase)
 	}
-	resultParams.Stage = stage
+	resultParams.Phase = phase
 
 	resultParams.OperatorAddress = resultParams.CallerAddress
-	err := p.avsKeeper.SubmitTaskResult(ctx, resultParams)
+
+	result := &avstypes.TaskResultInfo{
+		TaskId:              resultParams.TaskID,
+		OperatorAddress:     resultParams.OperatorAddress,
+		TaskContractAddress: resultParams.TaskContractAddress.String(),
+		TaskResponse:        resultParams.TaskResponse,
+		BlsSignature:        resultParams.BlsSignature,
+		Phase:               uint32(resultParams.Phase),
+	}
+	err := p.avsKeeper.SetTaskResultInfo(ctx, resultParams.OperatorAddress, result)
 	if err != nil {
 		return nil, err
 	}

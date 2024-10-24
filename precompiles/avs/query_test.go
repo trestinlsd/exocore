@@ -322,6 +322,7 @@ func (suite *AVSManagerPrecompileSuite) TestGetOperatorOptedUSDValue() {
 func (suite *AVSManagerPrecompileSuite) TestGetRegisteredPubkey() {
 	method := suite.precompile.Methods[avsManagerPrecompile.MethodGetRegisteredPubkey]
 	privateKey, err := blst.RandKey()
+	suite.NoError(err)
 	operatorAddr := "exo13h6xg79g82e2g2vhjwg7j4r2z2hlncelwutkjr"
 
 	publicKey := privateKey.PublicKey()

@@ -76,7 +76,7 @@ var (
 
 	ErrParamError = errorsmod.Register(
 		ModuleName, 18,
-		"The parameter must be 1 or 2",
+		"The parameter must be 0 or 1",
 	)
 
 	ErrParamNotEmptyError = errorsmod.Register(

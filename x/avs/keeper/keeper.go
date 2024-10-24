@@ -228,25 +228,27 @@ func (k Keeper) UpdateAVSInfo(ctx sdk.Context, params *types.AVSRegisterOrDeregi
 func (k Keeper) CreateAVSTask(ctx sdk.Context, params *types.TaskInfoParams) (uint64, error) {
 	avsInfo := k.GetAVSInfoByTaskAddress(ctx, params.TaskContractAddress)
 	if avsInfo.AvsAddress == "" {
-		return 0, errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("the taskaddr is :%s", params.TaskContractAddress))
+		return types.InvalidTaskID, errorsmod.Wrap(types.ErrUnregisterNonExistent, fmt.Sprintf("the taskaddr is :%s", params.TaskContractAddress))
 	}
 	// If avs CreateAVSTask check CallerAddress
 	if !slices.Contains(avsInfo.AvsOwnerAddress, params.CallerAddress) {
-		return 0, errorsmod.Wrap(types.ErrCallerAddressUnauthorized, fmt.Sprintf("this caller not qualified to CreateAVSTask %s", params.CallerAddress))
+		return types.InvalidTaskID, errorsmod.Wrap(types.ErrCallerAddressUnauthorized, fmt.Sprintf("this caller not qualified to CreateAVSTask %s", params.CallerAddress))
 	}
 	taskPowerTotal, err := k.operatorKeeper.GetAVSUSDValue(ctx, avsInfo.AvsAddress)
-
-	if err != nil || taskPowerTotal.IsZero() || taskPowerTotal.IsNegative() {
-		return 0, errorsmod.Wrap(types.ErrVotingPowerIncorrect, fmt.Sprintf("the votingpower of avs is <<=0,avs addr is：%s", avsInfo.AvsAddress))
+	if err != nil {
+		return types.InvalidTaskID, errorsmod.Wrap(err, "failed to get AVS USD value")
+	}
+	if taskPowerTotal.IsZero() || taskPowerTotal.IsNegative() {
+		return types.InvalidTaskID, errorsmod.Wrap(types.ErrVotingPowerIncorrect, fmt.Sprintf("the voting power of AVS is zero or negative, AVS address: %s", avsInfo.AvsAddress))
 	}
 
 	epoch, found := k.epochsKeeper.GetEpochInfo(ctx, avsInfo.EpochIdentifier)
 	if !found {
-		return 0, errorsmod.Wrap(types.ErrEpochNotFound, fmt.Sprintf("epoch info not found %s", avsInfo.EpochIdentifier))
+		return types.InvalidTaskID, errorsmod.Wrap(types.ErrEpochNotFound, fmt.Sprintf("epoch info not found %s", avsInfo.EpochIdentifier))
 	}
 
 	if k.IsExistTask(ctx, strconv.FormatUint(params.TaskID, 10), params.TaskContractAddress) {
-		return 0, errorsmod.Wrap(types.ErrAlreadyExists, fmt.Sprintf("the task is :%s", strconv.FormatUint(params.TaskID, 10)))
+		return types.InvalidTaskID, errorsmod.Wrap(types.ErrAlreadyExists, fmt.Sprintf("the task is :%s", strconv.FormatUint(params.TaskID, 10)))
 	}
 	operatorList, err := k.operatorKeeper.GetOptedInOperatorListByAVS(ctx, avsInfo.AvsAddress)
 	if err != nil {
@@ -444,16 +446,4 @@ func (k Keeper) RaiseAndResolveChallenge(ctx sdk.Context, params *types.Challeng
 	}
 	return k.SetTaskChallengedInfo(ctx, params.TaskID, params.OperatorAddress.String(), params.CallerAddress,
 		params.TaskContractAddress)
-}
-
-func (k Keeper) SubmitTaskResult(ctx sdk.Context, params *types.TaskResultParams) error {
-	result := &types.TaskResultInfo{
-		TaskId:              params.TaskID,
-		OperatorAddress:     params.OperatorAddress,
-		TaskContractAddress: params.TaskContractAddress.String(),
-		TaskResponse:        params.TaskResponse,
-		BlsSignature:        params.BlsSignature,
-		Stage:               params.Stage,
-	}
-	return k.SetTaskResultInfo(ctx, params.OperatorAddress, result)
 }
